@@ -1,0 +1,66 @@
+.el-card {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 2px 12px rgba(0, 21, 41, 0.06);
+}
+
+.el-card__header {
+  padding: 14px 20px;
+  font-weight: 600;
+  color: #303133;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.card-header > span:first-child {
+  position: relative;
+  padding-left: 10px;
+}
+
+.card-header > span:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 14px;
+  border-radius: 2px;
+  background-color: var(--el-color-primary);
+}
+
+.search-form {
+  padding: 16px 16px 0;
+  margin-bottom: 14px !important;
+  background-color: #f8fafc;
+  border-radius: 8px;
+}
+
+.el-table {
+  --el-table-border-color: #ebeef5;
+  --el-table-header-bg-color: #f7f8fa;
+  --el-table-row-hover-bg-color: #ecf5ff;
+  border-radius: 8px;
+}
+
+.el-table th.el-table__cell {
+  background: linear-gradient(180deg, #fafbfd 0%, #f1f3f8 100%);
+  color: #303133;
+  font-weight: 600;
+}
+
+.el-table .el-table__cell {
+  padding: 10px 0;
+}
+
+.el-table .el-button.is-link + .el-button.is-link,
+.el-table .el-button.is-link + .more-dropdown {
+  margin-left: 4px;
+}
+
+.el-dialog {
+  border-radius: 10px;
+}
+
+.el-dialog__title {
+  font-weight: 600;
+}
