@@ -52,7 +52,7 @@
         <span class="cfg-icon green"><el-icon><Connection /></el-icon></span>
         <div>
           <h4>设备通信</h4>
-          <p>堆垛机 / 输送线的连接与保活策略</p>
+          <p>按需连接：通信时自动建连，空闲超时后自动断开</p>
         </div>
       </header>
       <div class="cfg-grid">
@@ -62,21 +62,9 @@
           <p class="desc">单位毫秒，建立设备连接的最长等待时间</p>
         </div>
         <div class="cfg-item">
-          <label>心跳检测间隔</label>
-          <el-input-number v-model="form.heartbeatInterval" :min="1" :max="120" controls-position="right" class="w180" @change="scheduleSave('heartbeatInterval')" />
-          <p class="desc">单位秒，在线设备的定时探测周期</p>
-        </div>
-        <div class="cfg-item">
-          <label>断线自动重连</label>
-          <div class="inline-control">
-            <el-switch v-model="form.autoReconnect" @change="scheduleSave('autoReconnect')" />
-            <span class="desc inline">{{ form.autoReconnect ? '开启后设备断线将按以下次数自动重连' : '关闭后断线需手动重新连接' }}</span>
-          </div>
-        </div>
-        <div class="cfg-item" :class="{ disabled: !form.autoReconnect }">
-          <label>自动重连次数</label>
-          <el-input-number v-model="form.reconnectTimes" :min="1" :max="10" :disabled="!form.autoReconnect" controls-position="right" class="w180" @change="scheduleSave('reconnectTimes')" />
-          <p class="desc">超过次数后停止重连并标记为连接失败</p>
+          <label>空闲自动断开</label>
+          <el-input-number v-model="form.connIdleTimeout" :min="5" :max="3600" :step="5" controls-position="right" class="w180" @change="scheduleSave('connIdleTimeout')" />
+          <p class="desc">单位秒，连接成功后超过该时长无通信将自动断开（最小 5 秒）</p>
         </div>
       </div>
     </section>
@@ -207,9 +195,7 @@ const form = reactive({
   warehouseCode: '',
   pageSize: 20,
   connectTimeout: 5000,
-  heartbeatInterval: 10,
-  autoReconnect: true,
-  reconnectTimes: 3,
+  connIdleTimeout: 60,
   autoDispatch: true,
   dispatchInterval: 5,
   maxTaskPerDevice: 2,

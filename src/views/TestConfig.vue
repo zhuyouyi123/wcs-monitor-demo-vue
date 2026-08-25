@@ -37,9 +37,10 @@
       <el-table-column label="创建时间" width="170">
         <template #default="{ row }">{{ formatTime(row.createTime) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="140" align="center" fixed="right">
+      <el-table-column label="操作" width="190" align="center" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" @click="openDialog(row)"><el-icon><Edit /></el-icon>修改</el-button>
+          <el-button link type="warning" @click="handleCopy(row)"><el-icon><CopyDocument /></el-icon>复制</el-button>
           <el-button link type="danger" @click="handleDelete(row)"><el-icon><Delete /></el-icon>删除</el-button>
         </template>
       </el-table-column>
@@ -162,6 +163,16 @@ const resetQuery = () => {
 
 const openDialog = (row) => {
   Object.assign(form, defaultForm(), row ? { ...row } : {})
+  dialogVisible.value = true
+}
+
+const handleCopy = (row) => {
+  Object.assign(form, defaultForm(), {
+    ...row,
+    id: null,
+    createTime: null,
+    configName: `${row.configName || ''}-副本`
+  })
   dialogVisible.value = true
 }
 

@@ -303,6 +303,7 @@ import {
   S7_DATA_TYPES,
 } from "../api/device";
 import { listTestConfigs } from "../api/testConfig";
+import { loadSysConfig, sysConfig } from "../utils/sysConfig";
 
 const loading = ref(false);
 const saving = ref(false);
@@ -505,8 +506,8 @@ const handleConnect = async (row) => {
 
 const handleDisconnect = async (row) => {
   try {
-    await disconnectDevice(row.id);
-    ElMessage.success("已断开连接");
+    const reason = await disconnectDevice(row.id);
+    ElMessage.success(`已断开连接（${reason || "用户手动断开"}）`);
     loadData();
   } catch (e) {
     ElMessage.error(e.message || "断开失败");
@@ -514,6 +515,7 @@ const handleDisconnect = async (row) => {
 };
 
 let pollTimer = null;
+let refreshTimer = null;
 const startPolling = () => {
   stopPolling();
   let count = 0;
@@ -528,9 +530,23 @@ const stopPolling = () => {
     pollTimer = null;
   }
 };
+// 按系统配置的刷新间隔定时拉取，及时反映后端异步变化的状态（如网络断开）
+const startAutoRefresh = () => {
+  const interval = Number(sysConfig.refreshInterval) || 0;
+  if (interval > 0) {
+    refreshTimer = setInterval(loadData, interval * 1000);
+  }
+};
 
-onMounted(loadData);
-onUnmounted(stopPolling);
+onMounted(async () => {
+  await loadSysConfig();
+  loadData();
+  startAutoRefresh();
+});
+onUnmounted(() => {
+  stopPolling();
+  if (refreshTimer) clearInterval(refreshTimer);
+});
 </script>
 
 <style scoped>
