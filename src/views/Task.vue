@@ -184,6 +184,15 @@
 
     <el-drawer v-model="drawerVisible" :title="`采集数据 - ${currentTask?.taskName || ''}`" size="760px">
       <div class="drawer-toolbar">
+        <el-select
+          v-model="recordDbFilter"
+          placeholder="全部 DB 块"
+          clearable
+          style="width: 130px"
+          @change="handleDbFilterChange"
+        >
+          <el-option v-for="d in dbOptions" :key="d" :label="`DB ${d}`" :value="d" />
+        </el-select>
         <el-button type="primary" size="small" @click="loadDataRecords"><el-icon><Refresh /></el-icon>刷新</el-button>
         <span class="desc">每 {{ refreshSeconds }} 秒自动刷新 · 共 {{ recordTotal }} 条</span>
       </div>
@@ -192,8 +201,15 @@
         <el-table-column prop="dbNumber" label="DB 块号" width="80" align="center" />
         <el-table-column prop="startOffset" label="起始偏移" width="85" align="center" />
         <el-table-column prop="dataType" label="数据类型" width="90" align="center" />
-        <el-table-column prop="rawValue" label="采集值" min-width="110">
-          <template #default="{ row }"><span class="value-text">{{ row.rawValue }}</span></template>
+        <el-table-column label="采集值" min-width="110">
+          <template #default="{ row }">
+            <el-tooltip v-if="row.dictLabel" :content="`原始值: ${row.rawValue}`" placement="top">
+              <span class="value-text dict" :style="row.dictColor ? { color: row.dictColor } : null">
+                <i v-if="row.dictColor" class="v-dot" :style="{ background: row.dictColor }"></i>{{ row.dictLabel }}
+              </span>
+            </el-tooltip>
+            <span v-else class="value-text">{{ row.rawValue }}</span>
+          </template>
         </el-table-column>
         <el-table-column label="采集时间" width="160">
           <template #default="{ row }">{{ formatTime(row.collectTime) }}</template>
@@ -203,11 +219,13 @@
         <el-pagination
           v-model:current-page="recordPage"
           :page-size="recordPageSize"
+          :page-sizes="[10, 20, 50, 100]"
           :total="recordTotal"
-          layout="prev, pager, next, total"
+          layout="total, sizes, prev, pager, next"
           background
           small
           @current-change="loadDataRecords"
+          @size-change="handleRecordSizeChange"
         />
       </div>
     </el-drawer>
@@ -225,7 +243,8 @@ import {
   deleteMonitorTask,
   startMonitorTask,
   stopMonitorTask,
-  pageMonitorData
+  pageMonitorData,
+  pageMonitorDataLatest
 } from '../api/monitorTask'
 import { loadSysConfig, sysConfig } from '../utils/sysConfig'
 
@@ -246,8 +265,12 @@ const currentTask = ref(null)
 const records = ref([])
 const recordLoading = ref(false)
 const recordPage = ref(1)
-const recordPageSize = ref(20)
+const userRecordSize = ref(null)
+// 默认每页条数跟随系统设置
+const recordPageSize = computed(() => userRecordSize.value || sysConfig.pageSize || 20)
 const recordTotal = ref(0)
+const recordDbFilter = ref(null)
+const dbOptions = ref([])
 let recordTimer = null
 let listTimer = null
 
@@ -454,7 +477,8 @@ const loadDataRecords = async () => {
   try {
     const page = await pageMonitorData(currentTask.value.id, {
       current: recordPage.value,
-      size: recordPageSize.value
+      size: recordPageSize.value,
+      dbNumber: recordDbFilter.value ?? undefined
     })
     records.value = page.records || []
     recordTotal.value = Number(page.total) || 0
@@ -465,11 +489,40 @@ const loadDataRecords = async () => {
   }
 }
 
+/** DB 块号下拉选项：取该设备最新一轮采集涉及的 DB 块 */
+const buildDbOptions = async () => {
+  if (!currentTask.value) return
+  try {
+    const all = (await pageMonitorDataLatest()) || []
+    const set = new Set(
+      all
+        .filter((d) => d.deviceId === currentTask.value.deviceId && d.dbNumber != null)
+        .map((d) => d.dbNumber)
+    )
+    dbOptions.value = [...set].sort((a, b) => a - b)
+  } catch {
+    dbOptions.value = []
+  }
+}
+
+const handleDbFilterChange = () => {
+  recordPage.value = 1
+  loadDataRecords()
+}
+
+const handleRecordSizeChange = (size) => {
+  userRecordSize.value = size
+  recordPage.value = 1
+  loadDataRecords()
+}
+
 const openData = (row) => {
   currentTask.value = row
   recordPage.value = 1
+  recordDbFilter.value = null
   drawerVisible.value = true
   loadDataRecords()
+  buildDbOptions()
   stopRecordTimer()
   recordTimer = setInterval(() => {
     if (!recordLoading.value) loadDataRecords()
@@ -552,6 +605,19 @@ onUnmounted(() => {
   font-family: Consolas, Monaco, monospace;
   font-weight: 600;
   color: var(--el-color-primary);
+}
+
+.value-text.dict {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.v-dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
 }
 
 /* ---------- 新建/编辑任务弹窗 ---------- */

@@ -129,6 +129,22 @@
             style="width: 100%"
           />
         </el-form-item>
+        <el-form-item label="货架层数" prop="rackLevels">
+          <el-input-number
+            v-model="form.rackLevels"
+            :min="1"
+            :max="30"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="货架列数" prop="rackCols">
+          <el-input-number
+            v-model="form.rackCols"
+            :min="1"
+            :max="64"
+            style="width: 100%"
+          />
+        </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
             v-model="form.remark"
@@ -319,6 +335,8 @@ const defaultForm = () => ({
   deviceType: "STACKER",
   ipAddress: "",
   port: 102,
+  rackLevels: 4,
+  rackCols: 24,
   remark: "",
 });
 

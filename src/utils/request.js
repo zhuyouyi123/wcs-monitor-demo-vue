@@ -46,8 +46,18 @@ async function http(url, options = {}) {
 }
 
 export const get = (url, params) => {
-  const qs = params ? '?' + new URLSearchParams(params).toString() : ''
-  return http(url + qs)
+  let qs = ''
+  if (params) {
+    const sp = new URLSearchParams()
+    for (const [k, v] of Object.entries(params)) {
+      // 跳过空值，避免序列化成 "undefined"/"null"/""
+      if (v !== undefined && v !== null && v !== '') {
+        sp.append(k, v)
+      }
+    }
+    qs = sp.toString()
+  }
+  return http(url + (qs ? '?' + qs : ''))
 }
 
 export const post = (url, data) => http(url, { method: 'POST', body: JSON.stringify(data) })

@@ -41,22 +41,32 @@
             <span>输送线节点管理</span>
           </el-menu-item>
         </el-sub-menu>
-        <el-menu-item index="/test-config">
-          <el-icon><Link /></el-icon>
-          <template #title>通信测试配置</template>
-        </el-menu-item>
         <el-menu-item index="/task">
           <el-icon><List /></el-icon>
           <template #title>任务管理</template>
         </el-menu-item>
-        <el-menu-item index="/system">
-          <el-icon><Setting /></el-icon>
-          <template #title>系统设置</template>
-        </el-menu-item>
-        <el-menu-item v-if="loginUser.role === 'admin'" index="/users">
-          <el-icon><User /></el-icon>
-          <template #title>用户管理</template>
-        </el-menu-item>
+        <el-sub-menu index="/config-group">
+          <template #title>
+            <el-icon><Setting /></el-icon>
+            <span>系统配置</span>
+          </template>
+          <el-menu-item index="/test-config">
+            <el-icon><Link /></el-icon>
+            <span>通信测试配置</span>
+          </el-menu-item>
+          <el-menu-item index="/dict">
+            <el-icon><Collection /></el-icon>
+            <span>字典配置</span>
+          </el-menu-item>
+          <el-menu-item index="/system">
+            <el-icon><Tools /></el-icon>
+            <span>系统设置</span>
+          </el-menu-item>
+          <el-menu-item v-if="loginUser.role === 'admin'" index="/users">
+            <el-icon><User /></el-icon>
+            <span>用户管理</span>
+          </el-menu-item>
+        </el-sub-menu>
       </el-menu>
     </el-aside>
 

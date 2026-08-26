@@ -58,6 +58,12 @@ const routes = [
         meta: { title: '通信测试配置' }
       },
       {
+        path: 'dict',
+        name: 'DictConfig',
+        component: () => import('../views/DictConfig.vue'),
+        meta: { title: '字典配置' }
+      },
+      {
         path: 'task',
         name: 'Task',
         component: () => import('../views/Task.vue'),
